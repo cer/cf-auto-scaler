@@ -1,11 +1,14 @@
-package net.chrisrichardson.cfautoscaler.backend.cep;
+package net.chrisrichardson.cfautoscaler.backend.cep.esper;
 
 import javax.annotation.PostConstruct;
 
-import net.chrisrichardson.cfautoscaler.backend.collection.InstanceMeasurement;
+import net.chrisrichardson.cfautoscaler.backend.cep.AlarmSource;
+import net.chrisrichardson.cfautoscaler.backend.cep.AlarmSpec;
+import net.chrisrichardson.cfautoscaler.backend.cep.ApplicationAlarmConsumer;
 
 import org.springframework.stereotype.Component;
 
+import com.espertech.esper.client.Configuration;
 import com.espertech.esper.client.EPAdministrator;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
@@ -13,9 +16,11 @@ import com.espertech.esper.client.EventBean;
 import com.espertech.esper.client.UpdateListener;
 
 @Component
-public class Esper {
+public class Esper implements AlarmSource {
 
-  public static final int EVENT_WINDOW_SIZE_IN_SECONDS = 15;
+  static final int AVERAGE_WINDOW_SIZE = 30;
+
+  public static final int EVENT_WINDOW_SIZE_IN_SECONDS = AVERAGE_WINDOW_SIZE * 3 / 2;
 
   private EPServiceProvider epService;
   
@@ -56,25 +61,30 @@ public class Esper {
 
   @PostConstruct
   public void initializeEsper() {
-    epService = EPServiceProviderManager.getDefaultProvider();
-
+    epService = EPServiceProviderManager.getDefaultProvider(makeConfiguration());
     epAdmin = epService.getEPAdministrator();
-    
+    initializeEngine();
     epAdmin
-      .createEPL("insert into net.chrisrichardson.cfautoscaler.backend.cep.ApplicationAverage(appName, metric, average) select appName, metric, avg(value) as average from net.chrisrichardson.cfautoscaler.backend.collection.InstanceMeasurement.win:time_batch(30 sec) group by appName, metric")
-      ;
-    epAdmin
-      .createEPL("select appName, instanceId, metric, avg(value) as avg from net.chrisrichardson.cfautoscaler.backend.collection.InstanceMeasurement.win:time(30 sec) group by appName, instanceId, metric")
-      //.addListener(new InstanceAverageListener())
+      .createEPL("insert into ApplicationAverage(appName, metric, average) select appName, metric, avg(value) as average" + 
+          " from net.chrisrichardson.cfautoscaler.backend.collection.InstanceMeasurement.win:time_batch(" + AVERAGE_WINDOW_SIZE + "sec) group by appName, metric")
       ;
 
   }
 
-  public void createAutoscalingRule(String appName, ApplicationAlarmConsumer applicationAlarmConsumer, String alarmName, AlarmSpec alarmSpec) {
+  protected Configuration makeConfiguration() {
+    return new Configuration();
+  }
+
+  protected void initializeEngine() {
+    // subclasses can override
+  }
+
+  @Override
+  public void registerAlarm(String appName, String alarmName, AlarmSpec alarmSpec) {
     epAdmin
     .createEPL("insert into net.chrisrichardson.cfautoscaler.backend.cep.Alarm(appName, alarmName) "
         + String.format(" select appName, '%s' as alarmName ", alarmName)
-        + " from net.chrisrichardson.cfautoscaler.backend.cep.ApplicationAverage "
+        + " from ApplicationAverage "
         + " match_recognize ("
         + " partition by appName, metric "
         + " measures E1.appName as appName, E1.metric as metric "
@@ -89,16 +99,17 @@ public class Esper {
         ;
   }
 
+  @Override
   public void subscribeToAlarms(String appName, ApplicationAlarmConsumer applicationAlarmConsumer) {
     epAdmin
      .createEPL(String.format("select * from net.chrisrichardson.cfautoscaler.backend.cep.Alarm where appName='%s'", appName))
      .addListener(new AlarmListener(applicationAlarmConsumer));
     epAdmin
-    .createEPL(String.format("select * from net.chrisrichardson.cfautoscaler.backend.cep.ApplicationAverage where appName='%s'", appName))
+    .createEPL(String.format("select * from ApplicationAverage where appName='%s'", appName))
     .addListener(new AverageListener(applicationAlarmConsumer));
   }
 
-  public void publish(InstanceMeasurement icu) {
-    epService.getEPRuntime().sendEvent(icu);
+  public void publish(Object event) {
+    epService.getEPRuntime().sendEvent(event);
   }
 }

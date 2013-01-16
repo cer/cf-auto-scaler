@@ -6,6 +6,15 @@ public class AlarmSpec {
   private double threshold;
   private AlarmOperator operator;
   
+  public AlarmSpec() {
+  }
+  
+  public AlarmSpec(String metric, AlarmOperator operator, double threshold) {
+    this.metric = metric;
+    this.operator = operator;
+    this.threshold = threshold;
+  }
+
   public String getMetric() {
     return metric;
   }

@@ -11,8 +11,8 @@ import net.chrisrichardson.asyncpojos.actoids.core.ActoidContext;
 import net.chrisrichardson.asyncpojos.actoids.stereotypes.Actoid;
 import net.chrisrichardson.asyncpojos.futures.EnhancedFuture;
 import net.chrisrichardson.asyncpojos.futures.FutureUtils;
+import net.chrisrichardson.cfautoscaler.backend.cep.AlarmSource;
 import net.chrisrichardson.cfautoscaler.backend.cep.ApplicationAlarmConsumer;
-import net.chrisrichardson.cfautoscaler.backend.cep.Esper;
 import net.chrisrichardson.cfautoscaler.backend.collection.Collector;
 
 import org.apache.commons.logging.Log;
@@ -33,7 +33,7 @@ public class ApplicationAutoscalerImpl implements ApplicationAutoscaler, Applica
   private ActoidContext actoidContext;
   
   @Autowired
-  private Esper esper;
+  private AlarmSource alarmSource;
   
   @Autowired
   private Collector collector;
@@ -94,7 +94,7 @@ public class ApplicationAutoscalerImpl implements ApplicationAutoscaler, Applica
     this.autoScalingPolicy = autoScalingPolicy;
     // FIXME We should set alarms for number of instances being outside of range
     logger.info("Autoscaling started for application: " + appName);
-    esper.subscribeToAlarms(appName, actoidContext.self(ApplicationAlarmConsumer.class));
+    alarmSource.subscribeToAlarms(appName, actoidContext.self(ApplicationAlarmConsumer.class));
   }
 
   @Override
@@ -109,7 +109,7 @@ public class ApplicationAutoscalerImpl implements ApplicationAutoscaler, Applica
     if (rules.size() == 1) {
       collector.startCollecting(appName, actoidContext.self(ApplicationAutoscaler.class));
     }
-    esper.createAutoscalingRule(appName, actoidContext.self(ApplicationAlarmConsumer.class), ruleName, rule.getAlarmSpec());
+    alarmSource.registerAlarm(appName, ruleName, rule.getAlarmSpec());
   }
 
   @Override

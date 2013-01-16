@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.chrisrichardson.cfautoscaler.backend.cep.Esper;
+import net.chrisrichardson.cfautoscaler.backend.cep.esper.Esper;
 
 import org.joda.time.DateTime;
 

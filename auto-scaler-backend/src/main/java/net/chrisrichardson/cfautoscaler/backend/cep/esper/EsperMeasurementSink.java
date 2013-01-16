@@ -1,4 +1,4 @@
-package net.chrisrichardson.cfautoscaler.backend.cep;
+package net.chrisrichardson.cfautoscaler.backend.cep.esper;
 
 import net.chrisrichardson.cfautoscaler.backend.collection.InstanceMeasurement;
 import net.chrisrichardson.cfautoscaler.backend.collection.MeasurementSink;

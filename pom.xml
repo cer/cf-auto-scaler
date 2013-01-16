@@ -14,8 +14,23 @@
 	<modules>
 		<module>auto-scaler-backend</module>
 		<module>end-to-end-tests</module>
-    <module>auto-scaler-webapp</module>
-  </modules>
+		<module>auto-scaler-webapp</module>
+	</modules>
+
+	<repositories>
+		<repository>
+			<id>s-milestone</id>
+			<url>http://maven.springframework.org/milestone</url>
+		</repository>
+		<repository>
+			<id>s-libs-snapshot</id>
+			<url>http://repo.springsource.org/libs-snapshot-local</url>
+		</repository>
+		<repository>
+			<id>cer-snapshot</id>
+			<url>s3://repo2.chrisrichardson.net/snapshot</url>
+		</repository>
+	</repositories>
 
 	<dependencyManagement>
 		<dependencies>
@@ -48,6 +63,13 @@
 	</dependencyManagement>
 
 	<build>
+		<extensions>
+			<extension>
+				<groupId>org.springframework.build</groupId>
+				<artifactId>aws-maven</artifactId>
+				<version>4.4.0.RELEASE</version>
+			</extension>
+		</extensions>
 		<pluginManagement>
 			<plugins>
 				<plugin>

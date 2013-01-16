@@ -20,21 +20,6 @@
 		<cloud.foundry.password>specifyCloudFoundryPassword</cloud.foundry.password>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>s-milestone</id>
-			<url>http://maven.springframework.org/milestone</url>
-		</repository>
-		<repository>
-			<id>s-libs-snapshot</id>
-			<url>http://repo.springsource.org/libs-snapshot-local</url>
-		</repository>
-		<repository>
-			<id>cer-snapshot</id>
-			<url>s3://repo2.chrisrichardson.net/snapshot</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -88,15 +73,14 @@
 			<artifactId>spring-hateoas</artifactId>
 			<version>0.4.0.BUILD-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.9.5</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
-		<extensions>
-			<extension>
-				<groupId>org.springframework.build</groupId>
-				<artifactId>aws-maven</artifactId>
-				<version>4.4.0.RELEASE</version>
-			</extension>
-		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
