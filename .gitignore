@@ -1,0 +1,10 @@
+*.log
+target/
+.scala_dependencies
+test-output/
+.cache
+.idea/**
+*.iml
+.project
+.settings
+.classpath

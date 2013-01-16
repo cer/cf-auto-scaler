@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:actoid="http://chrisrichardson.net/schema/actoids"
+
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.1.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+       http://chrisrichardson.net/schema/actoids http://chrisrichardson.net/schema/actoids.xsd
+       "
+        >
+
+    <context:component-scan base-package="net.chrisrichardson.cfautoscaler.backend"/>
+
+    <actoid:config default-executor="executor"/>
+
+    <task:executor id="executor" pool-size="15"/>
+    
+    <task:scheduler id="scheduler" pool-size="10"/>
+	<!-- 
+	Using @Scheduled(fixedDelay=5000) doesn't seem to work. Method is invoked without going through Actoid.
+	Probably an ordering problem
+	<task:annotation-driven scheduler="scheduler"/> 
+	-->
+	<task:scheduled-tasks scheduler="scheduler">
+	    <task:scheduled ref="collectorImpl" method="pollForApplications" fixed-rate="5000"/>
+	</task:scheduled-tasks>
+
+	<beans profile="default">
+		<context:property-placeholder/>
+	</beans>
+
+	<beans profile="cloud">
+		<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+			<property name="ignoreUnresolvablePlaceholders" value="false"/> 
+			<property name="properties">
+				<value>
+					server.base.url=
+					cloud.foundry.email=#{systemEnvironment['cloud_foundry_email']}
+					cloud.foundry.password=#{systemEnvironment['cloud_foundry_password']}
+				</value>
+			</property>
+		</bean>	
+	</beans>
+
+</beans>

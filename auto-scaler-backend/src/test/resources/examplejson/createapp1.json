@@ -1,0 +1,1 @@
+{"appName":"vertx-clock","autoScalingPolicy":{"minInstances":1,"maxInstances":3,"waitingPeriodInSeconds":10}}

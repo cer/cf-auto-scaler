@@ -1,0 +1,1 @@
+{"name":"idle","rule":{"delta":-1,"alarmSpec":{"metric":"cpu","threshold":30.0,"operator":"LT"}},"links":[]}
