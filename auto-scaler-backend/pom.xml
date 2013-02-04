@@ -14,12 +14,6 @@
 	<name>cf-auto-scaler</name>
 	<url>http://maven.apache.org</url>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<cloud.foundry.email>specifyCloudFoundryEmail</cloud.foundry.email>
-		<cloud.foundry.password>specifyCloudFoundryPassword</cloud.foundry.password>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -29,7 +23,7 @@
 		<dependency>
 			<groupId>net.chrisrichardson.async</groupId>
 			<artifactId>actoids</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -88,17 +82,6 @@
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<argLine>-Dcloud.foundry.email=${cloud.foundry.email}
-						-Dcloud.foundry.password=${cloud.foundry.password}</argLine>
-					<excludes>
-						<exclude>**/*EndToEndTest.class</exclude>
-					</excludes>
 				</configuration>
 			</plugin>
 			<plugin>

@@ -71,10 +71,12 @@ public class ApplicationCollectorImpl implements ApplicationCollector {
     Future<CloudApplication> applicationFuture = cloudFoundry.getApplication(appName);
     Future<ApplicationStats> appStatsFuture = cloudFoundry.getApplicationInstances(appName);
 
+    // FIXME - replace with callback (except that we need a timeout)
+
     try {
       FutureUtils.await(TimeUnit.MILLISECONDS, 800, applicationFuture, appStatsFuture);
     } catch (Exception e) {
-      logger.error(e);
+      logger.error("error gathering metrics", e);
       return;
     }
 

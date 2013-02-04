@@ -57,8 +57,10 @@ public class ApplicationScalerImpl implements ApplicationScaler {
           try {
             if (outcome.isSuccessful())
               appAutoscaler.noteScalingSuccess(newInstances);
-            else
+            else {
+              logger.error("autoscaling failed", outcome.failure);
               appAutoscaler.noteScalingFailure(newInstances, outcome.failure.getMessage());
+            }
           } catch (Throwable t) {
             logger.error("weird error", t);
             throw new RuntimeException(t);

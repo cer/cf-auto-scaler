@@ -9,6 +9,10 @@
 
 	<properties>
 		<spring.framework.version>3.1.2.RELEASE</spring.framework.version>
+        <cloud.foundry.email>specifyCloudFoundryEmail</cloud.foundry.email>
+        <cloud.foundry.password>specifyCloudFoundryPassword</cloud.foundry.password>
+        <test.app.name>specifyTestAppName</test.app.name>
+        <autoscaler.url>specifyAutoscalerUrl</autoscaler.url>
 	</properties>
 
 	<modules>
@@ -27,8 +31,8 @@
 			<url>http://repo.springsource.org/libs-snapshot-local</url>
 		</repository>
 		<repository>
-			<id>cer-snapshot</id>
-			<url>s3://repo2.chrisrichardson.net/snapshot</url>
+			<id>actoid-release</id>
+			<url>http://repository.actoids.org/release</url>
 		</repository>
 	</repositories>
 
@@ -63,13 +67,6 @@
 	</dependencyManagement>
 
 	<build>
-		<extensions>
-			<extension>
-				<groupId>org.springframework.build</groupId>
-				<artifactId>aws-maven</artifactId>
-				<version>4.4.0.RELEASE</version>
-			</extension>
-		</extensions>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -80,6 +77,21 @@
 						<target>1.6</target>
 					</configuration>
 				</plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <argLine>
+                            -Dcloud.foundry.email=${cloud.foundry.email}
+                            -Dcloud.foundry.password=${cloud.foundry.password}
+                            -Dtest.app.name=${test.app.name}
+                            -Dautoscaler.url=${autoscaler.url}
+                        </argLine>
+                        <excludes>
+                            <exclude>**/*EndToEndTest.class</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
