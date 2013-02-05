@@ -16,14 +16,19 @@ import net.chrisrichardson.cfautoscaler.webapp.resources.AutoscalingRuleResource
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.ClientHttpRequest;
-import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RequestCallback;
@@ -40,6 +45,8 @@ public class AutoscalerWebApplicationEndToEndTest {
   private String autoscaledAppsUrl;
   private CloudFoundryClient cloudFoundryClient;
   private String autoscalerUrl;
+  private String cloudFoundryUserId;
+  private String cloudFoundryPassword;
 
   class LinkExtractor implements RequestCallback, ResponseExtractor<MultiValueMap<String, Link>> {
 
@@ -71,12 +78,16 @@ public class AutoscalerWebApplicationEndToEndTest {
 
   @Test
   public void test() throws Exception {
+    cloudFoundryUserId = System.getProperty("cloud.foundry.email");
+    cloudFoundryPassword = System.getProperty("cloud.foundry.password");
+    Assert.assertNotNull("Please specify -Dcloud.foundry.email=", cloudFoundryUserId);
+    Assert.assertNotNull("Please specify -Dcloud.foundry.password=", cloudFoundryPassword);
     testAppName = System.getProperty("test.app.name");
     Assert.assertNotNull("Please specify -Dtest.app.name=", testAppName);
 
     autoscalerUrl = System.getProperty("autoscaler.url");
 
-    restTemplate = new RestTemplate();
+    restTemplate = makeAuthenticatedRestTemplate();
     linkExtractor = new LinkExtractor();
 
     loginToCloudFoundry();
@@ -91,6 +102,17 @@ public class AutoscalerWebApplicationEndToEndTest {
 
     assertApplicationIsAutoscaled(appUrl);
 
+  }
+
+  private RestTemplate makeAuthenticatedRestTemplate() {
+    RestTemplate r = new RestTemplate();
+    HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+    DefaultHttpClient httpClient = (DefaultHttpClient) requestFactory.getHttpClient();
+    CredentialsProvider credsProvider = new BasicCredentialsProvider();
+    credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(cloudFoundryUserId, cloudFoundryPassword));
+    httpClient.setCredentialsProvider(credsProvider);
+    r.setRequestFactory(requestFactory);
+    return r;
   }
 
   private void assertApplicationIsAutoscaled(URI appUrl) throws InterruptedException {
@@ -115,12 +137,8 @@ public class AutoscalerWebApplicationEndToEndTest {
   }
 
   private void loginToCloudFoundry() throws MalformedURLException {
-    String userId = System.getProperty("cloud.foundry.email");
-    String password = System.getProperty("cloud.foundry.password");
-    Assert.assertNotNull("Please specify -Dcloud.foundry.email=", userId);
-    Assert.assertNotNull("Please specify -Dcloud.foundry.password=", password);
 
-    cloudFoundryClient = new CloudFoundryClient(userId, password, "http://api.cloudfoundry.com");
+    cloudFoundryClient = new CloudFoundryClient(cloudFoundryUserId, cloudFoundryPassword, "http://api.cloudfoundry.com");
     cloudFoundryClient.login();
   }
 

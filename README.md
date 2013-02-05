@@ -17,6 +17,8 @@ The autoscaler exposes a HATEOAS-style REST API for configuring autoscaling for 
     	 "href":"http://cf-auto-scaler.cloudfoundry.com/autoscaledapps"}
     ]}
 
+The autoscaler uses a simple Basic HTTP authentication mechanism that verifies that the credentials supplied in the HTTP request match your Cloud Foundry email and password.
+
 The autoscaler works as follows. First you specify that an application should be auto scaled. You supply the follow parameters (attributes of AutoscalingPolicy):
 
 * minInstances - minimum number of instances

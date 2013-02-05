@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.cloudfoundry.client.lib.ApplicationStats;
 import org.cloudfoundry.client.lib.CloudApplication;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 
@@ -22,20 +22,17 @@ import org.springframework.context.annotation.Scope;
 public class CloudFoundryImpl implements CloudFoundry {
 
   private Log logger = LogFactory.getLog(CloudFoundryImpl.class);
-  
-  @Value("${cloud.foundry.email}")
-  private String userId;
 
-  @Value("${cloud.foundry.password}")
-  private String password;
+  @Autowired
+  private CloudFoundryCredentialsHolder cloudFoundryCredentialsHolder;
 
   private CloudFoundryClient client;
 
   private void ensureCloudFoundryClient() {
     if (client == null)
       try {
-        logger.info("Logging in with " + userId + ", " + password);
-        client = new CloudFoundryClient(userId, password, "http://api.cloudfoundry.com");
+        logger.info("Logging in with " + cloudFoundryCredentialsHolder.getUserId() + ", " + cloudFoundryCredentialsHolder.getPassword());
+        client = new CloudFoundryClient(cloudFoundryCredentialsHolder.getUserId(), cloudFoundryCredentialsHolder.getPassword(), "http://api.cloudfoundry.com");
         client.login();
       } catch (MalformedURLException e) {
         throw new RuntimeException(e);
